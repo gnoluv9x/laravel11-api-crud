@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('posts', function (Blueprint $table) {
-            $table->string('title', 100)->unique()->change();
+            $table->foreignId('user_id')->after('content')->nullable()->constrained();
         });
     }
 
@@ -21,9 +21,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasColumn('posts', 'title')) {
+        if (Schema::hasColumn('posts', 'user_id')) {
             Schema::table('posts', function (Blueprint $table) {
-                $table->dropColumn('title');
+                $table->dropColumn('user_id');
             });
         }
     }

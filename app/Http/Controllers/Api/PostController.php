@@ -10,8 +10,11 @@ use App\Http\Resources\PostCollection;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Gate;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class PostController extends Controller
 {
@@ -30,12 +33,16 @@ class PostController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StorePostRequest $request): JsonResponse
+    public function store(StorePostRequest $request, User $user): JsonResponse
     {
+        $token = JWTAuth::getToken();
+        $user = JWTAuth::toUser($token);
+
         $filled  = $request->validated();
 
         $filled['created_at'] = Carbon::now()->timestamp;
         $filled['updated_at'] = Carbon::now()->timestamp;
+        $filled['user_id'] = $user->id;
 
         Post::create($filled);
 
@@ -48,7 +55,6 @@ class PostController extends Controller
     public function show(ShowPostRequest $request)
     {
         try {
-            //code...
             $validated = $request->validated();
             $post = Post::where("id", $validated['id'])->firstOrFail();
 
@@ -64,12 +70,19 @@ class PostController extends Controller
      */
     public function update(UpdatePostRequest $request, Post $post)
     {
-        $data = $request->validated();
-        unset($data['id']);
+        // Gate::authorize('update-post', $post);
+        $response = Gate::inspect('update-post', $post);
 
-        $post->update($data);
+        if ($response->allowed()) {
+            $data = $request->validated();
+            unset($data['id']);
 
-        return response()->json(['message' => 'Update successfully']);
+            $post->update($data);
+
+            return response()->json(['message' => 'Update successfully']);
+        } else {
+            return response()->json(['message' => $response->message()], 403);
+        }
     }
 
     /**
@@ -78,13 +91,20 @@ class PostController extends Controller
     public function destroy(Post $post)
     {
         try {
-            $currentPost = Post::where('id', $post->id)->firstOrFail();
-            $currentPost->delete();
+            // Gate::authorize('delete-post', $post);
+            $response = Gate::inspect('delete-post', $post);
 
-            return response()->json(['message' => 'Deleted post']);
+            if ($response->allowed()) {
+                $currentPost = Post::where('id', $post->id)->firstOrFail();
+                $currentPost->delete();
+
+                return response()->json(['message' => 'Deleted post']);
+            }
+
+            throw new \Exception($response->message());
         } catch (\Throwable $th) {
             //throw $th;
-            return response()->json($th->getMessage());
+            return response()->json(['message' => $th->getMessage()], 403);
         }
     }
 }
