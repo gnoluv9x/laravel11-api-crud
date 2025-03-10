@@ -71,18 +71,28 @@ class PostController extends Controller
     public function update(UpdatePostRequest $request, Post $post)
     {
         // Gate::authorize('update-post', $post);
-        $response = Gate::inspect('update-post', $post);
+        // $response = Gate::inspect('update-post', $post);
 
-        if ($response->allowed()) {
-            $data = $request->validated();
-            unset($data['id']);
+        // Using policy
+        // $response = Gate::inspect('update', $post);
 
-            $post->update($data);
+        // if ($response->allowed()) {
+        //     $data = $request->validated();
+        //     unset($data['id']);
 
-            return response()->json(['message' => 'Update successfully']);
-        } else {
-            return response()->json(['message' => $response->message()], 403);
-        }
+        //     $post->update($data);
+
+        //     return response()->json(['message' => 'Update successfully']);
+        // } else {
+        //     return response()->json(['message' => $response->message()], 403);
+        // }
+
+        $data = $request->validated();
+        unset($data['id']);
+
+        $post->update($data);
+
+        return response()->json(['message' => 'Update successfully']);
     }
 
     /**
@@ -92,16 +102,21 @@ class PostController extends Controller
     {
         try {
             // Gate::authorize('delete-post', $post);
-            $response = Gate::inspect('delete-post', $post);
+            // $response = Gate::inspect('delete-post', $post);
 
-            if ($response->allowed()) {
-                $currentPost = Post::where('id', $post->id)->firstOrFail();
-                $currentPost->delete();
+            // if ($response->allowed()) {
+            //     $currentPost = Post::where('id', $post->id)->firstOrFail();
+            //     $currentPost->delete();
 
-                return response()->json(['message' => 'Deleted post']);
-            }
+            //     return response()->json(['message' => 'Deleted post']);
+            // }
 
-            throw new \Exception($response->message());
+            // throw new \Exception($response->message());
+
+            $currentPost = Post::where('id', $post->id)->firstOrFail();
+            $currentPost->delete();
+
+            return response()->json(['message' => 'Deleted post']);
         } catch (\Throwable $th) {
             //throw $th;
             return response()->json(['message' => $th->getMessage()], 403);

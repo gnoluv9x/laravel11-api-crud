@@ -11,8 +11,8 @@ Route::group([
     Route::post('', [PostController::class, 'store']);
     Route::get('', [PostController::class, 'index']);
     Route::get('/{post}', [PostController::class, 'show']);
-    Route::put('/{post}', [PostController::class, 'update']);
-    Route::delete('/{post}', [PostController::class, 'destroy']);
+    Route::put('/{post}', [PostController::class, 'update'])->middleware('can:update,post');
+    Route::delete('/{post}', [PostController::class, 'destroy'])->middleware('can:delete,post');
 });
 
 Route::group([
