@@ -109,6 +109,7 @@ return [
     */
 
     'refresh_ttl' => (int) env('JWT_REFRESH_TTL', 20160),
+    'refresh_secret' => env('REFRESH_SECRET'),
 
     /*
     |--------------------------------------------------------------------------

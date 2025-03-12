@@ -19,10 +19,10 @@ Route::group([
     'prefix' => 'auth',
     'middleware' => 'auth'
 ], function () {
-    Route::get('/me', [AuthController::class, 'me']);
+    Route::get('/profile', [AuthController::class, 'profile']);
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::post('/refresh', [AuthController::class, 'refresh']);
 
+    Route::post('/refresh', [AuthController::class, 'refresh'])->withoutMiddleware('auth');
     Route::post('/register', [AuthController::class, 'register'])->withoutMiddleware('auth');
     Route::post('/login', [AuthController::class, 'login'])->withoutMiddleware('auth');
 });

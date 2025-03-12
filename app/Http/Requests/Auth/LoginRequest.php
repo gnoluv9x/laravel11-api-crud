@@ -41,8 +41,13 @@ class LoginRequest extends FormRequest
     {
         $errors = (new ValidationException($validator))->errors();
 
+        $reversedErrors = array_reverse($errors);
+        $firstErrorArray = array_pop($reversedErrors);
+
         throw new HttpResponseException(
-            response()->json(['errors' => $errors], 400)
+            response()->json([
+                'message' => $firstErrorArray[0]
+            ], 400)
         );
     }
 }
